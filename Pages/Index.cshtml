@@ -1,0 +1,80 @@
+﻿@page
+@model IndexModel
+
+<div class="text-center py-20 flex flex-col gap-10">
+    @* <h1 class="uppercase font-bold text-4xl">HulaTugma</h1> *@
+    <img src="~/hulatugma-sm.png" class="max-h-[120px] sm:max-h-[400px] w-fit place-self-center"/>
+
+    @if(Model.Guesses.Count >= 6 || Model.Target.Contains("Congratulations")){
+        <pre class="uppercase font-bold sm:text-2xl break-words text-lg">@Model.Target</pre>
+    }
+
+    <div class="flex flex-col justify-center items-center">
+        <div class="grid grid-cols-6 gap-2 w-[80vw] max-w-[480px] aspect-square">
+           @for (int i = 0; i < 36; i++)
+            {
+                string letter = "";
+                int row = i / 6;
+                int col = i % 6;
+                string design = "";
+
+                if (row < Model.Guesses.Count)
+                {
+                    letter = Model.Guesses[row][col].ToString();
+                    design = Model.Outcomes[i].ToString();
+                }
+
+                bool isLatestRow = row == Model.Guesses.Count - 1;
+
+                string animationClass;
+                string delay;
+
+                if (isLatestRow)
+                {
+                    // On new submission: animate only the latest row
+                    animationClass = "animate flip";
+                    delay = $"{col * 0.2}s";
+                }
+                else
+                {
+                    // No animation for older rows
+                    animationClass = "";
+                    delay = "0s";
+                }
+
+                <div class="tile @(!string.IsNullOrEmpty(letter) ? animationClass : "") @design"
+                    style="animation-delay:@delay">
+                    @letter
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="flex flex-col justify-center items-center gap-10">
+        @if(Model.Guesses.Count < 6 || Model.Target.Contains("Congratulations")){
+            <form method="post" class="flex flex-col gap-4 w-[80vw] max-w-[480px]">
+                <input asp-for="Guess" id="guess" maxlength="6" placeholder="Itala ang 6 na letrang hula"
+                    class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    />
+
+                <!-- Show validation error -->
+                <span asp-validation-for="Guess" class="text-red-600"></span>
+
+                <button type="submit"
+                        class="bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700">
+                    Ipasa
+                </button>
+            </form>
+        }
+        <form method="post" asp-page-handler="NewGame" class="flex flex-col w-[80vw] max-w-[480px]">
+            <button type="submit"
+                    class="bg-green-600 text-white rounded-md px-4 py-2 hover:bg-green-700">
+                Magpanibagong Laro
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
